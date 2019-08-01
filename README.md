@@ -11,10 +11,10 @@
 ```go
     linkAjaClient := linkaja.NewClient()
     linkAjaClient.BaseUrl = "LINK_AJA_BASE_URL",
-    linkAjaClientTerminalId = "YOUR_LINK_AJA_TERMINAL_ID",
-    linkAjaClientUserKey = "YOUR_LINK_AJA_USER_KEY",
-    linkAjaClientPassword = "YOUR_LINK_AJA_PASSWORD",
-    linkAjaClientSignature = "YOUR_LINK_AJA_SIGNATURE",
+    linkAjaClient.TerminalId = "YOUR_LINK_AJA_TERMINAL_ID",
+    linkAjaClient.UserKey = "YOUR_LINK_AJA_USER_KEY",
+    linkAjaClient.Password = "YOUR_LINK_AJA_PASSWORD",
+    linkAjaClient.Signature = "YOUR_LINK_AJA_SIGNATURE",
 
     coreGateway := linkaja.CoreGateway{
         Client: linkAjaClient,
