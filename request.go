@@ -10,3 +10,7 @@ type PublicTokenRequest struct {
 	DefaultLanguage string
 	DefaultTemplate string
 }
+
+type CheckTransactionStatusRequest struct {
+	RefNum string
+}

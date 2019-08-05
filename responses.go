@@ -5,3 +5,10 @@ type PublicTokenResponse struct {
 	RefNum   string `json:"refNum"`
 	FastTime uint64 `json:"fastTime"`
 }
+
+type CheckTransactionStatusRespones struct {
+	RefNum          string `json:"refNum"`
+	Amount          string `json:"amount"`
+	TransactionDate string `json:"transactionDate"`
+	Status          string `json:"status"`
+}
