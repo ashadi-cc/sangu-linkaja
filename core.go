@@ -37,7 +37,7 @@ func (gateway *CoreGateway) GetPublicToken(req *PublicTokenRequest) (res PublicT
 	data.Set("total", req.Total)
 	data.Set("successUrl", req.SuccessUrl)
 	data.Set("failedUrl", req.FailedUrl)
-	data.Set("items", req.Items)
+	data.Set("items", GenerateItems(req.Items))
 	data.Set("msisdn", req.MSISDN)
 	data.Set("default_language", req.DefaultLanguage)
 	data.Set("default_template", req.DefaultTemplate)
