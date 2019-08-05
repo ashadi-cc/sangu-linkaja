@@ -5,10 +5,16 @@ type PublicTokenRequest struct {
 	Total           string
 	SuccessUrl      string
 	FailedUrl       string
-	Items           string
+	Items           []PublicTokenItemRequest
 	MSISDN          string
 	DefaultLanguage string
 	DefaultTemplate string
+}
+
+type PublicTokenItemRequest struct {
+	Name     string
+	Price    string
+	Quantity string
 }
 
 type CheckTransactionStatusRequest struct {
