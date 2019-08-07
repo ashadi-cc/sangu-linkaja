@@ -6,7 +6,7 @@ type PublicTokenResponse struct {
 	FastTime uint64 `json:"fastTime"`
 }
 
-type CheckTransactionStatusRespones struct {
+type TransactionResponses struct {
 	RefNum          string `json:"refNum"`
 	Amount          string `json:"amount"`
 	TransactionDate string `json:"transactionDate"`

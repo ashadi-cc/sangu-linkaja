@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	PublicTokenRequestUrl = "linkaja-api/api/payment"
-	CheckTransactionStatusUrl = "linkaja-api/api/check/customer/transaction"
+	PublicTokenRequestURL     = "linkaja-api/api/payment"
+	CheckTransactionStatusURL = "linkaja-api/api/check/customer/transaction"
+	RefundTransactionURL      = "tcash-api/api/rev/customer/transaction"
 )
 
 // CoreGateway struct
@@ -46,7 +47,7 @@ func (gateway *CoreGateway) GetPublicToken(req *PublicTokenRequest) (res PublicT
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	err = gateway.Call("POST", PublicTokenRequestUrl, headers, strings.NewReader(data.Encode()), &res)
+	err = gateway.Call("POST", PublicTokenRequestURL, headers, strings.NewReader(data.Encode()), &res)
 	if err != nil {
 		return
 	}
@@ -54,7 +55,7 @@ func (gateway *CoreGateway) GetPublicToken(req *PublicTokenRequest) (res PublicT
 	return
 }
 
-func (gateway *CoreGateway) CheckTransactionStatus(req *CheckTransactionStatusRequest) (res CheckTransactionStatusRespones, err error) {
+func (gateway *CoreGateway) CheckTransactionStatus(req *TransactionRequest) (res TransactionResponses, err error) {
 	data := url.Values{}
 	data.Set("refNum", req.RefNum)
 	data.Set("terminalId", gateway.Client.TerminalId)
@@ -66,7 +67,27 @@ func (gateway *CoreGateway) CheckTransactionStatus(req *CheckTransactionStatusRe
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	err = gateway.Call("POST", CheckTransactionStatusUrl, headers, strings.NewReader(data.Encode()), &res)
+	err = gateway.Call("POST", CheckTransactionStatusURL, headers, strings.NewReader(data.Encode()), &res)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (gateway *CoreGateway) RefundTransaction(req *TransactionRequest) (res TransactionResponses, err error) {
+	data := url.Values{}
+	data.Set("refNum", req.RefNum)
+	data.Set("terminalId", gateway.Client.TerminalId)
+	data.Set("userKey", gateway.Client.UserKey)
+	data.Set("passKey", gateway.Client.Password)
+	data.Set("signKey", gateway.Client.Signature)
+
+	headers := map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
+	}
+
+	err = gateway.Call("POST", RefundTransactionURL, headers, strings.NewReader(data.Encode()), &res)
 	if err != nil {
 		return
 	}

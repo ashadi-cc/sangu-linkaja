@@ -17,6 +17,6 @@ type PublicTokenItemRequest struct {
 	Quantity string
 }
 
-type CheckTransactionStatusRequest struct {
+type TransactionRequest struct {
 	RefNum string
 }
