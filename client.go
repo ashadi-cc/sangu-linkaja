@@ -13,10 +13,12 @@ import (
 // Client struct
 type Client struct {
 	BaseUrl    string
+	MerchantId string
 	TerminalId string
 	UserKey    string
 	Password   string
 	Signature  string
+	Key        string
 	LogLevel   int
 	Logger     *log.Logger
 }
@@ -99,7 +101,7 @@ func (c *Client) ExecuteRequest(req *http.Request, v interface{}) error {
 	}
 
 	if logLevel > 2 {
-		logger.Println("LinkAja response: ", resBody)
+		logger.Println("LinkAja response: ", string(resBody))
 	}
 
 	if v != nil && res.StatusCode == 200 {

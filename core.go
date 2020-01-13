@@ -1,15 +1,24 @@
 package linkaja
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
 	PublicTokenRequestURL     = "linkaja-api/api/payment"
 	CheckTransactionStatusURL = "linkaja-api/api/check/customer/transaction"
 	RefundTransactionURL      = "tcash-api/api/rev/customer/transaction"
+	GenerateApplinkPaymentURL = "applink/v1/create"
+
+	MaxTimestampLength = 16
 )
 
 // CoreGateway struct
@@ -91,6 +100,61 @@ func (gateway *CoreGateway) RefundTransaction(req *TransactionRequest) (res Tran
 	if err != nil {
 		return
 	}
+
+	return
+}
+
+func (gateway *CoreGateway) GenerateApplinkPayment(req *GenerateApplinkPaymentRequest) (res GenerateApplinkPaymentResponse, err error) {
+	timestamp := PadRight(fmt.Sprintf("%d", time.Now().Unix()), "0", MaxTimestampLength)
+	auth := base64.StdEncoding.EncodeToString([]byte(gateway.Client.UserKey + ":" + gateway.Client.Password))
+
+	headers := map[string]string{
+		"Content-Type":  "text/plain",
+		"Authorization": "Basic " + auth,
+		"Timestamp":     timestamp,
+	}
+
+	body, err := json.Marshal(req)
+	if err != nil {
+		return
+	}
+
+	plaintext, err := PKCS7Padding(body, aes.BlockSize)
+	if err != nil {
+		return
+	}
+	iv := []byte(timestamp)
+
+	encrypted, err := gateway.encrypt(plaintext, iv)
+	if err != nil {
+		return
+	}
+	request := base64.StdEncoding.EncodeToString(encrypted)
+
+	err = gateway.Call("POST", GenerateApplinkPaymentURL, headers, strings.NewReader(request), &res)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (gateway *CoreGateway) encrypt(plaintext []byte, iv []byte) (ciphertext []byte, err error) {
+	key := []byte(gateway.Client.Key)
+
+	if len(plaintext)%aes.BlockSize != 0 {
+		err = fmt.Errorf("plaintext is not a multiple of the block size")
+		return
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return
+	}
+	ciphertext = make([]byte, len(plaintext))
+
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext, plaintext)
 
 	return
 }
