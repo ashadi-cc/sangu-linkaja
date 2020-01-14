@@ -119,13 +119,11 @@ func (gateway *CoreGateway) GenerateApplinkPayment(req *GenerateApplinkPaymentRe
 		return
 	}
 
-	plaintext, err := PKCS7Padding(body, aes.BlockSize)
-	if err != nil {
-		return
-	}
+	plaintext := PKCS5Padding(body, aes.BlockSize)
+	key := []byte(gateway.Client.Key)
 	iv := []byte(timestamp)
 
-	encrypted, err := gateway.encrypt(plaintext, iv)
+	encrypted, err := gateway.encrypt(plaintext, key, iv)
 	if err != nil {
 		return
 	}
@@ -139,9 +137,45 @@ func (gateway *CoreGateway) GenerateApplinkPayment(req *GenerateApplinkPaymentRe
 	return
 }
 
-func (gateway *CoreGateway) encrypt(plaintext []byte, iv []byte) (ciphertext []byte, err error) {
-	key := []byte(gateway.Client.Key)
+func (gateway *CoreGateway) DecryptInformPaymentRequest(encrypted string, auth string, timestamp string) (req InformPaymentRequest, err error) {
+	userpass, err := base64.StdEncoding.DecodeString(auth)
+	if err != nil {
 
+		return
+	}
+
+	authtoken := strings.Split(string(userpass), ":")
+	if len(authtoken) != 2 {
+		err = fmt.Errorf("invalid auth")
+		return
+	}
+
+	if gateway.Client.UserKey != authtoken[0] || gateway.Client.Password != authtoken[1] {
+		err = fmt.Errorf("invalid auth")
+		return
+	}
+
+	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return
+	}
+	key := []byte(gateway.Client.Key)
+	iv := []byte(PadRight(timestamp, "0", MaxTimestampLength))
+
+	plaintext, err := gateway.decrypt(ciphertext, key, iv)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(plaintext, &req)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (gateway *CoreGateway) encrypt(plaintext []byte, key []byte, iv []byte) (ciphertext []byte, err error) {
 	if len(plaintext)%aes.BlockSize != 0 {
 		err = fmt.Errorf("plaintext is not a multiple of the block size")
 		return
@@ -151,10 +185,33 @@ func (gateway *CoreGateway) encrypt(plaintext []byte, iv []byte) (ciphertext []b
 	if err != nil {
 		return
 	}
-	ciphertext = make([]byte, len(plaintext))
 
+	ciphertext = make([]byte, len(plaintext))
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(ciphertext, plaintext)
 
 	return
+}
+
+func (gateway *CoreGateway) decrypt(ciphertext []byte, key []byte, iv []byte) (plaintext []byte, err error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return
+	}
+
+	if len(ciphertext) < aes.BlockSize {
+		err = fmt.Errorf("ciphertext too short")
+		return
+	}
+
+	if len(ciphertext)%aes.BlockSize != 0 {
+		err = fmt.Errorf("ciphertext is not a multiple of the block size")
+		return
+	}
+
+	plaintext = make([]byte, len(ciphertext))
+	mode := cipher.NewCBCDecrypter(block, iv)
+	mode.CryptBlocks(plaintext, ciphertext)
+
+	return PKCS5Trimming(plaintext), nil
 }

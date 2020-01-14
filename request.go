@@ -26,6 +26,7 @@ type GenerateApplinkPaymentRequest struct {
 	PartnerTrxID   string `json:"partnerTrxID"`
 	MerchantID     string `json:"merchantID"`
 	TerminalID     string `json:"terminalID"`
+	TerminalName   string `json:"terminalName"`
 	TotalAmount    string `json:"totalAmount"`
 	PartnerApplink string `json:"partnerApplink"`
 	Items          []Item `json:"items"`
@@ -35,4 +36,17 @@ type Item struct {
 	Name      string `json:"name"`
 	UnitPrice string `json:"unitPrice"`
 	Quantity  string `json:"qty"`
+}
+
+type InformPaymentRequest struct {
+	Status         string `json:"status"`
+	Refnum         string `json:"linkAjaRefnum"`
+	TrxDate        string `json:"trxDate"`
+	PartnerTrxID   string `json:"partnerTrxID"`
+	MerchantID     string `json:"merchantID"`
+	TerminalID     string `json:"terminalID"`
+	TerminalName   string `json:"terminalName"`
+	TotalAmount    string `json:"totalAmount"`
+	PartnerApplink string `json:"partnerApplink"`
+	Items          []Item `json:"items"`
 }

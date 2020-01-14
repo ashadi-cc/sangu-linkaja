@@ -24,18 +24,13 @@ func PadRight(str string, item string, length int) string {
 	return str + strings.Repeat(item, count)
 }
 
-func PKCS5Padding(data []byte, blockSize int) []byte {
-	padding := blockSize - len(data)%blockSize
+func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(data, padtext...)
+	return append(ciphertext, padtext...)
 }
 
-func PKCS7Padding(data []byte, blockSize int) ([]byte, error) {
-	if blockSize < 0 || blockSize > 256 {
-		return nil, fmt.Errorf("pkcs7: Invalid block size %d", blockSize)
-	}
-
-	padLen := 16 - len(data)%blockSize
-	padding := bytes.Repeat([]byte{byte(padLen)}, padLen)
-	return append(data, padding...), nil
+func PKCS5Trimming(encrypt []byte) []byte {
+	padding := encrypt[len(encrypt)-1]
+	return encrypt[:len(encrypt)-int(padding)]
 }
